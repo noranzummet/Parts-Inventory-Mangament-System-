@@ -20,14 +20,14 @@ const ProductTable: React.FC = () => {
 
   return (
   <div>
-    <h1 className='text-center text-6xl m-10'>Products</h1>
+    <h1 className='text-center text-6xl m-10 text-amber-600 '>Products</h1>
      <div className="flex items-center gap-3">
      
      </div>
 
-    <div className="relative overflow-x-auto bg-slate-50 border-black/5">
+    <div className="relative overflow-x-auto ">
       
-      <table className="w-full text-sm text-left rtl:text-right text-body">
+      <table className=" border-gray-50 shadow-2xl border-2 rounded-4xl w-full text-sm text-left rtl:text-right text-body ">
         <thead className="text-sm text-body bg-neutral-secondary-medium">
           <tr>
             <th scope="col" className="px-6 py-3 rounded-s-base font-medium">

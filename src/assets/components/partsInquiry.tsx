@@ -73,7 +73,7 @@ const PartsInquiry: React.FC = () => {
       
       {/* 1. Header & Search Section */}
       <div className="w-full max-w-md mb-12">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Parts Inquiry</h1>
+        <h1 className="text-3xl font-bold text-center text-amber-600 mb-6">Parts Inquiry</h1>
         
         <form onSubmit={handleSearch} className="relative">
           <label htmlFor="search" className="sr-only">Search by ID</label>
@@ -94,7 +94,7 @@ const PartsInquiry: React.FC = () => {
             />
             <button 
               type="submit" 
-              className="absolute end-2 bottom-2 bg-cyan-600 hover:bg-cyan-700 text-white font-medium rounded-lg text-sm px-4 py-2 transition-colors"
+              className="absolute end-2 bottom-2 bg-yellow-300 hover:bg-yellow-500 text-white font-medium rounded-lg text-sm px-4 py-2 transition-colors"
             >
               Find Part
             </button>
