@@ -6,10 +6,10 @@ import { toast } from "react-toastify";
 interface PartFormData {
   name: string;
   sku: string;
-  stock: string | number; // Changed from quantity to match Laravel
+  stock: string | number; 
   category: "oils" | "filters" | "parts";
-  replacment: string;    // Changed from replacements to match Laravel typo
-  location: string;      // Added because your Laravel validation requires it
+  replacment: string;    
+  location: string;      
 }
 
 function AddNewPart() {
@@ -21,7 +21,7 @@ function AddNewPart() {
     stock: "",
     category: "parts",
     replacment: "",
-    location: "Main Warehouse", // Default value
+    location: "p-12", 
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -61,7 +61,7 @@ function AddNewPart() {
         stock: "",
         category: "parts",
         replacment: "",
-        location: "Main Warehouse",
+        location: "p-12",
       });
 
     } catch (error: any) {

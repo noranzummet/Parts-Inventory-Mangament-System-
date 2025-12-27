@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 interface NavItem {
   label: string;
@@ -12,6 +14,28 @@ interface NavItem {
 
 const DashboardLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const navigate = useNavigate();
+
+  // --- Logout Logic ---
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("auth_token");
+      
+      // Call Laravel Logout Route
+      await axios.post("http://localhost:8000/api/logout", {}, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+    } catch (error) {
+      console.error("Logout failed", error);
+    } finally {
+      // Clear local storage regardless of API success
+      localStorage.removeItem("auth_token");
+      // Redirect to login
+      navigate("/login");
+    }
+  };
 
   const navItems: NavItem[] = [
     {
@@ -28,29 +52,23 @@ const DashboardLayout: React.FC = () => {
       label: 'New Part Entry',
       href: '/AddNewPart',
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19">
-          </line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
       ),
-      
     },
     {
       label: 'Parts Inquiry',
       href: '/inquiry',
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        <line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
       ),
-  
     },
     {
       label: 'Create a Picking List',
       href: '#',
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
-        <path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"/></svg>
       )
     },
-
     {
       label: 'Sign Out',
       href: '#',
@@ -64,11 +82,10 @@ const DashboardLayout: React.FC = () => {
 
   return (
     <>
-      {/* Mobile Toggle Button */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         type="button"
-        className="text-heading bg-transparent box-border border border-transparent hover:bg-neutral-secondary-medium focus:ring-4 focus:ring-neutral-tertiary font-medium leading-5 rounded-base ms-3 mt-3 text-sm p-2 focus:outline-none inline-flex sm:hidden"
+        className="text-heading bg-transparent border border-transparent hover:bg-neutral-secondary-medium focus:ring-4 focus:ring-neutral-tertiary font-medium rounded-base ms-3 mt-3 text-sm p-2 focus:outline-none inline-flex sm:hidden"
       >
         <span className="sr-only">Open sidebar</span>
         <svg className="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -76,7 +93,6 @@ const DashboardLayout: React.FC = () => {
         </svg>
       </button>
 
-      {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 z-40 w-64 h-full transition-transform bg-neutral-primary-soft border-e border-default 
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} sm:translate-x-0`}
@@ -88,6 +104,12 @@ const DashboardLayout: React.FC = () => {
               <li key={item.label}>
                 <a
                   href={item.href}
+                  onClick={(e) => {
+                    if (item.label === 'Sign Out') {
+                      e.preventDefault();
+                      handleLogout();
+                    }
+                  }}
                   className="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group"
                 >
                   {item.icon}
@@ -111,11 +133,10 @@ const DashboardLayout: React.FC = () => {
         </div>
       </aside>
 
-      {/* Main Content Area */}
       <div className="p-4 sm:ml-64">
-       </div>
+        {/* Components rendered by your Router will go here */}
+      </div>
 
-      {/* Overlay for mobile when sidebar is open */}
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 z-30 bg-black/50 sm:hidden" 
@@ -125,6 +146,5 @@ const DashboardLayout: React.FC = () => {
     </>
   );
 };
-
 
 export default DashboardLayout;
