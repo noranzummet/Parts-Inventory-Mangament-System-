@@ -3,7 +3,20 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
+// --- Axios Global Configuration ---
+// This ensures Axios sends the token in the header for all future requests
+axios.defaults.baseURL = 'http://127.0.0.1:8000/api';
+axios.defaults.withCredentials = true;
+
+axios.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 // 1. Define the shape of the credentials
 interface LoginCredentials {
@@ -11,16 +24,10 @@ interface LoginCredentials {
   password:  string;
 }
 
-// 2. Define the shape of the expected API response
-// interface LoginResponse {
-//   accessToken: string;
-//   refreshToken: string;
-// }
-
 const Login: React.FC = () => {
   const navigate = useNavigate();
 
-  // State for inputs with explicit type
+  // State for inputs
   const [credentials, setCredentials] = useState<LoginCredentials>({
     username: '',
     password: ''
@@ -29,7 +36,7 @@ const Login: React.FC = () => {
   // State for inline error messages
   const [message, setMessage] = useState<string>("");
 
-  // Handle Input Change with ChangeEvent type
+  // --- Fixed: Added the missing handleChange function ---
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setCredentials((prev) => ({
@@ -41,29 +48,34 @@ const Login: React.FC = () => {
     if (message) setMessage("");
   };
 
-  // Form Submit with FormEvent type
+  // Form Submit
   const handleSubmit = async (e: FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
+    setMessage("");
 
-  // Mock API (مؤقت)
-  setTimeout(() => {
-    if (
-      credentials.username === "admin" &&
-      credentials.password === "1234"
-    ) {
-      localStorage.setItem("token", "fake-access-token");
-      localStorage.setItem("refreshToken", "fake-refresh-token");
-      localStorage.setItem("username", credentials.username);
+    try {
+      // 1. Send request to Laravel
+      const response = await axios.post('/login', {
+        username: credentials.username,
+        password: credentials.password,
+      });
 
-      toast.success("Login Successful!");
-      navigate("/dashboard");
-    } else {
-      const errorMsg = "Invalid username or password";
+      // 2. Check for 'access_token' (matching your AuthController)
+      if (response.data.access_token) {
+        localStorage.setItem("token", response.data.access_token);
+        localStorage.setItem("username", credentials.username);
+
+        toast.success("Login Successful!");
+        navigate("/dashboard");
+      }
+    } catch (error: any) {
+      // 3. Handle Errors (Validation or Invalid Credentials)
+      const errorMsg = error.response?.data?.message || "Invalid username or password";
       setMessage(errorMsg);
       toast.error(errorMsg);
+      console.error("Login Error:", error);
     }
-  }, 1000); // محاكاة تأخير API
-};
+  };
 
   return (
     <div className="flex w-screen h-screen items-center justify-center bg-white overflow-hidden">
@@ -110,10 +122,12 @@ const Login: React.FC = () => {
               Password
             </span>
           </div>
-            {/* Message */}
+
+          {/* Message */}
           {message && (
             <p className="mt-4 mb-4 text-center text-red-500 text-sm font-medium">{message}</p>
           )}
+
           {/* Submit button */}
           <button
             type="submit"

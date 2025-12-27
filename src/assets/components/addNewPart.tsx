@@ -1,32 +1,29 @@
-import React, { useState} from "react";
+import React, { useState } from "react";
 import type { ChangeEvent, FormEvent } from 'react';
 import axios from "axios";
 import { toast } from "react-toastify";
 
-
-// 1. تعريف أنواع البيانات لـ TypeScript
 interface PartFormData {
   name: string;
   sku: string;
-  quantity: string | number;
+  stock: string | number; // Changed from quantity to match Laravel
   category: "oils" | "filters" | "parts";
-  replacements: string;
+  replacment: string;    // Changed from replacements to match Laravel typo
+  location: string;      // Added because your Laravel validation requires it
 }
 
 function AddNewPart() {
-
   const [loading, setLoading] = useState<boolean>(false);
   
-  // 2. حالة النموذج مع الأنواع الجديدة
   const [formData, setFormData] = useState<PartFormData>({
     name: "",
     sku: "",
-    quantity: "",
-    category: "parts", // القيمة الافتراضية
-    replacements: "",
+    stock: "",
+    category: "parts",
+    replacment: "",
+    location: "Main Warehouse", // Default value
   });
 
-  // معالج تغيير المدخلات
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({
@@ -38,61 +35,52 @@ function AddNewPart() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    // التحقق من الحقول المطلوبة
-    if (!formData.name || !formData.sku || !formData.quantity) {
-      toast.warning("Name, SKU, and Quantity are required!");
+    if (!formData.name || !formData.sku || !formData.stock) {
+      toast.warning("Name, SKU, and Stock are required!");
       return;
     }
 
     setLoading(true);
 
     try {
-      // مكان الـ API (Placeholder)
-      // ملاحظة: يمكنك استبدال الرابط أدناه بـ API الخاص بك لاحقاً
-      const response = await axios.post("https://jsonplaceholder.typicode.com/posts", {
+      // 1. Point to your Laragon URL
+      // 2. We send 'status' because your Laravel controller validates it
+      const response = await axios.post("http://localhost:8000/api/parts", {
         ...formData,
-        userId: 1,
+        status: "available" 
       });
 
-      // منطق النجاح
       setLoading(false);
       
-      toast.success(`Part added successfully! ✅`, {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      toast.success(`Part ${response.data.data.name} added successfully! ✅`);
 
-      // مسح النموذج بعد الإرسال
+      // Reset Form
       setFormData({
         name: "",
         sku: "",
-        quantity: "",
+        stock: "",
         category: "parts",
-        replacements: "",
+        replacment: "",
+        location: "Main Warehouse",
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Add Part Error:", error);
-      toast.error("Failed to add part. Please try again.");
+      // Display Laravel validation errors if they exist
+      const errorMsg = error.response?.data?.message || "Failed to add part.";
+      toast.error(errorMsg);
       setLoading(false);
     }
   };
 
   return (
     <div className="w-full min-h-screen bg-gray-50">
-      
-      
-      {/* Content Area */}
-      <div className="md: flex flex-col items-center">
-        
-        <h1 className="text-3xl font-bold text-amber-700 mb-10">
-          Add New Part
-        </h1>
+      <div className="md: flex flex-col items-center p-6">
+        <h1 className="text-3xl font-bold text-amber-700 mb-10">Add New Part</h1>
 
         <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-2xl border border-gray-100">
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             
-            {/* Row 1: Name & SKU */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col gap-2">
                 <label className="text-gray-600 font-semibold text-sm">Part Name *</label>
@@ -119,15 +107,14 @@ function AddNewPart() {
               </div>
             </div>
 
-            {/* Row 2: Quantity & Category */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col gap-2">
-                <label className="text-gray-600 font-semibold text-sm">Quantity *</label>
+                <label className="text-gray-600 font-semibold text-sm">Stock Quantity *</label>
                 <input
                   type="number"
-                  name="quantity"
+                  name="stock" // Changed name to 'stock'
                   placeholder="0"
-                  value={formData.quantity}
+                  value={formData.stock}
                   onChange={handleChange}
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-300 transition-all"
                 />
@@ -148,34 +135,38 @@ function AddNewPart() {
               </div>
             </div>
 
-            {/* Row 3: Replacements */}
             <div className="flex flex-col gap-2">
-              <label className="text-gray-600 font-semibold text-sm">Replacements / Alternative Numbers</label>
+              <label className="text-gray-600 font-semibold text-sm">Location</label>
+              <input
+                type="text"
+                name="location"
+                placeholder="Shelf A-1"
+                value={formData.location}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-300 transition-all"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-gray-600 font-semibold text-sm">Replacements</label>
               <textarea
-                name="replacements"
+                name="replacment" // Changed to 'replacment' to match your Laravel typo
                 rows={3}
-                placeholder="e.g. BD-8800, BD-7700..."
-                value={formData.replacements}
+                placeholder="Alternative numbers..."
+                value={formData.replacment}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-300 transition-all resize-none"
               ></textarea>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
               className={`mt-4 w-full text-white font-bold py-3 rounded-lg shadow-md transition-all active:scale-95
-                ${loading ? "bg-cyan-400 cursor-not-allowed" : "bg-yellow-300 hover:bg-yellow-500"}
+                ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-400 hover:bg-yellow-500"}
               `}
             >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                   Processing...
-                </span>
-              ) : (
-                "Create Part"
-              )}
+              {loading ? "Processing..." : "Create Part"}
             </button>
 
           </form>

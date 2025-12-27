@@ -4,10 +4,21 @@ import Layout from './assets/layout/layout';
 import ProductTable from './assets/itemsCrud/productTable';
 import PartsInquiry from './assets/components/partsInquiry';
 import AddNewPart from './assets/components/addNewPart';
+import { useEffect } from 'react';
+import axios from 'axios';
+axios.defaults.baseURL = 'http://127.0.0.1:8000/api';
+axios.defaults.withCredentials = true; // Required for Sanctum
 
 
 function App() {
+  useEffect(() => {
+    axios.get('http://127.0.0.1:8000/api/test')
+      .then(res => console.log("Laravel says:", res.data))
+      .catch(err => console.error("Connection failed:", err));
+  }, []);
   return (
+
+    
     <BrowserRouter>
       <Routes>
         
